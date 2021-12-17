@@ -1,0 +1,70 @@
+class union_f {
+        private :
+            int n;
+            vector<int>parents;
+        public:
+            union_f(int m){
+                n = m;
+                for(int i = 0; i< n ;i ++){
+                    parents.push_back(i);
+                }
+            }
+            int find (int u){
+                while(u!=parents[u]){
+                    u = parents[u];
+                }
+                return u;
+            }
+            void merge(int u , int v){
+                int g1 = find(u);
+                int g2 = find(v);
+                parents[g2] = g1;
+            }
+};
+class Solution {
+    int getMST (int n, vector<vector<int>>&edges, int excludeEdge, int Pre_edge){
+        union_f ds(n);
+        int m = edges.size();
+        int weight = 0;
+        if(Pre_edge!=-1){
+            int g1 = ds.find(edges[Pre_edge][0]);
+            int g2 = ds.find(edges[Pre_edge][1]);
+            weight += edges[Pre_edge][2];
+            ds.merge(edges[Pre_edge][0],edges[Pre_edge][1]);
+        }
+        for(int i = 0; i<m ;i++){
+            if(i==excludeEdge) continue;
+            int g1 = ds.find(edges[i][0]);
+            int g2 = ds.find(edges[i][1]);
+            if(g1==g2) continue;
+            ds.merge(edges[i][0],edges[i][1]);
+            weight += edges[i][2];
+        }
+        for(int i = 0; i<n ; i++){
+            if(ds.find(i)!=ds.find(0)) return INT_MAX;
+        }
+        return weight;
+    }
+public:
+    vector<vector<int>> findCriticalAndPseudoCriticalEdges(int n, vector<vector<int>>& edges) {
+        int m = edges.size();
+        for(int i = 0; i< m ; i++) edges[i].push_back(i);
+        sort(edges.begin(),edges.end(),[&](vector<int>a, vector<int> b){
+           return a[2]<b[2]; 
+        });
+        int minWeight = getMST(n, edges, -1 ,-1);
+        
+        vector<int> critical , nonCritical;
+        
+        for(int i = 0; i< edges.size();i++){
+            if(minWeight< getMST(n,edges,i,-1)){
+                critical.push_back(edges[i][3]);
+            }
+            else if (minWeight==getMST(n,edges,-1,i)){
+                nonCritical.push_back(edges[i][3]);
+            }
+        }
+        
+        return {critical,nonCritical};
+    }
+};
